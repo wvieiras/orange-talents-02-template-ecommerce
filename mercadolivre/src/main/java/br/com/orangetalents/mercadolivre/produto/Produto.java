@@ -1,23 +1,32 @@
 package br.com.orangetalents.mercadolivre.produto;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.Length;
 
 import br.com.orangetalents.mercadolivre.categoria.Categoria;
 import br.com.orangetalents.mercadolivre.usuario.Usuario;
+import io.jsonwebtoken.lang.Assert;
 
-
+@Entity
 public class Produto {
 	
 	@Id
@@ -36,25 +45,64 @@ public class Produto {
 	@ManyToOne
 	private Usuario dono;
 	
+	@OneToMany(mappedBy = "produto", cascade = CascadeType.PERSIST)
+	private Set<CaracteristicaProduto> caracteristicas = new HashSet<>();
+	
 	//Construtor
 	public Produto(@NotBlank String nome, @NotNull @Positive Integer quantidade,
 			@NotBlank @Length(max = 1000) String descricao, @NotNull @Positive BigDecimal valor, Categoria categoria,
-			@NotNull Usuario dono) {
+			@NotNull Usuario dono, @Size(min = 3) @Valid Collection<NovaCaracteristicaRequest> caracteristicas) {
 		this.nome = nome;
 		this.quantidade = quantidade;
 		this.descricao = descricao;
 		this.valor = valor;
 		this.categoria = categoria;
 		this.dono = dono;
+		this.caracteristicas.addAll(caracteristicas
+			.stream().map(caracteristica -> caracteristica.toModel(this))
+			.collect(Collectors.toSet()));
+		
+		
+		Assert.isTrue(this.caracteristicas.size() >= 3, "Todo produto precisa ter no mínimo 3 caracteristicas");
+		
+		
 	}
 
 	
-	//ToString
 	@Override
 	public String toString() {
 		return "Produto [id=" + id + ", nome=" + nome + ", quantidade=" + quantidade + ", descricao=" + descricao
-				+ ", valor=" + valor + ", categoria=" + categoria + ", dono=" + dono + "]";
+				+ ", valor=" + valor + ", categoria=" + categoria + ", dono=" + dono + ", caracteristicas="
+				+ caracteristicas + "]";
 	}
 
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((nome == null) ? 0 : nome.hashCode());
+		return result;
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Produto other = (Produto) obj;
+		if (nome == null) {
+			if (other.nome != null)
+				return false;
+		} else if (!nome.equals(other.nome))
+			return false;
+		return true;
+	}
+
+	
+	
 }
