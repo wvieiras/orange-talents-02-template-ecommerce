@@ -47,8 +47,16 @@ public class Produto {
 	
 	@OneToMany(mappedBy = "produto", cascade = CascadeType.PERSIST)
 	private Set<CaracteristicaProduto> caracteristicas = new HashSet<>();
+
+	@OneToMany(mappedBy = "produto", cascade = CascadeType.MERGE)
+	private Set<ImagemProduto> imagens = new HashSet<>();
 	
 	//Construtor
+	@Deprecated
+	public Produto() {
+		
+	}	
+	
 	public Produto(@NotBlank String nome, @NotNull @Positive Integer quantidade,
 			@NotBlank @Length(max = 1000) String descricao, @NotNull @Positive BigDecimal valor, Categoria categoria,
 			@NotNull Usuario dono, @Size(min = 3) @Valid Collection<NovaCaracteristicaRequest> caracteristicas) {
@@ -68,12 +76,14 @@ public class Produto {
 		
 	}
 
-	
+
+
+
 	@Override
 	public String toString() {
 		return "Produto [id=" + id + ", nome=" + nome + ", quantidade=" + quantidade + ", descricao=" + descricao
 				+ ", valor=" + valor + ", categoria=" + categoria + ", dono=" + dono + ", caracteristicas="
-				+ caracteristicas + "]";
+				+ caracteristicas + ", imagens=" + imagens + "]";
 	}
 
 
@@ -102,6 +112,54 @@ public class Produto {
 			return false;
 		return true;
 	}
+
+
+	public void associaImagens(Set<String> links) {
+		Set<ImagemProduto> imagens = links.stream()
+				.map(link -> new ImagemProduto(this, link))
+				.collect(Collectors.toSet());
+
+		this.imagens.addAll(imagens);
+	}
+
+
+	public Long getId() {
+		return id;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public Integer getQuantidade() {
+		return quantidade;
+	}
+
+	public String getDescricao() {
+		return descricao;
+	}
+
+	public BigDecimal getValor() {
+		return valor;
+	}
+
+	public Categoria getCategoria() {
+		return categoria;
+	}
+
+	public Usuario getDono() {
+		return dono;
+	}
+
+	public Set<CaracteristicaProduto> getCaracteristicas() {
+		return caracteristicas;
+	}
+
+	public Set<ImagemProduto> getImagens() {
+		return imagens;
+	}
+	
+	
 
 	
 	

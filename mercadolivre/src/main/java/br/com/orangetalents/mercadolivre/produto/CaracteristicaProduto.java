@@ -34,6 +34,11 @@ public class CaracteristicaProduto {
 		this.produto = produto;
 	}
 
+	@Override
+	public String toString() {
+		return "CaracteristicaProduto [nome=" + nome + ", descricao=" + descricao + "]";
+	}
+
 	public String getNome() {
 		return nome;
 	}
