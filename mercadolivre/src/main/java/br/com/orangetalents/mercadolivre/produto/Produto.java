@@ -5,6 +5,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
@@ -14,6 +17,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -23,6 +27,9 @@ import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.Length;
 
 import br.com.orangetalents.mercadolivre.categoria.Categoria;
+import br.com.orangetalents.mercadolivre.detalheproduto.DetalheProdutoCaracteristicas;
+import br.com.orangetalents.mercadolivre.opniao.Opiniao;
+import br.com.orangetalents.mercadolivre.perguntas.Pergunta;
 import br.com.orangetalents.mercadolivre.usuario.Usuario;
 import io.jsonwebtoken.lang.Assert;
 
@@ -50,6 +57,13 @@ public class Produto {
 
 	@OneToMany(mappedBy = "produto", cascade = CascadeType.MERGE)
 	private Set<ImagemProduto> imagens = new HashSet<>();
+
+	@OneToMany(mappedBy = "produto")
+	@OrderBy("titulo asc")
+	private SortedSet<Pergunta> perguntas = new TreeSet<>();
+
+	@OneToMany(mappedBy = "produto", cascade = CascadeType.MERGE)
+	private Set<Opiniao> opinioes = new HashSet<>();
 	
 	//Construtor
 	@Deprecated
@@ -113,6 +127,7 @@ public class Produto {
 		return true;
 	}
 
+	
 
 	public void associaImagens(Set<String> links) {
 		Set<ImagemProduto> imagens = links.stream()
@@ -158,9 +173,23 @@ public class Produto {
 	public Set<ImagemProduto> getImagens() {
 		return imagens;
 	}
-	
-	
 
+	public <T> Set<T> mapeiaCaracteristicas(Function<CaracteristicaProduto, T> funcaoMapeadora) {
+		
+		return this.caracteristicas.stream().map(funcaoMapeadora).collect(Collectors.toSet());
+	}
+
+	public <T> Set<T> mapeiaImagens(Function<ImagemProduto, T> funcaoMapeadora) {
+		return this.imagens.stream().map(funcaoMapeadora).collect(Collectors.toSet());
+	}
+	public <T extends Comparable<T>> SortedSet<T> mapeiaPerguntas(Function<Pergunta, T> funcaoMapeadora) {
+		return this.perguntas.stream().map(funcaoMapeadora)
+				.collect(Collectors.toCollection(TreeSet :: new));
+	}
 	
+	public <T> Set<T> mapeiaOpinioes(Function<Opiniao, T> funcaoMapeadora) {
+		return this.opinioes.stream().map(funcaoMapeadora)
+				.collect(Collectors.toSet());
+	}
 	
 }
