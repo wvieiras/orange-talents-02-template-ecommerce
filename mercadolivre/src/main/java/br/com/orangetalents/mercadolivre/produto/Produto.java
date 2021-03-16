@@ -191,5 +191,15 @@ public class Produto {
 		return this.opinioes.stream().map(funcaoMapeadora)
 				.collect(Collectors.toSet());
 	}
+
+	public boolean abataEstoque(@Positive Integer quantidade) {
+		
+		if(quantidade <= this.quantidade) {
+			this.quantidade -= quantidade;
+			return true;
+		}
+		
+		return false;
+	}
 	
 }
